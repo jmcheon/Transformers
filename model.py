@@ -27,9 +27,9 @@ class PositionalEncoding(nn.Module):
 
         # Create a matrix of shape (seq_len, 1)
         position = torch.arange(0, self.seq_len, dtype=torch.float).unsqueeze(1)
-        div_term = torch.exp(
-            torch.arange(0, self.d_model, 2).float() * (-math.log(10000.0) / self.d_model)
-        )
+        embedding_index = torch.arange(0, self.d_model, 2).float()
+        # div_term = torch.exp(embedding_index * (-math.log(10000.0) / self.d_model))
+        div_term = torch.exp(embedding_index * (torch.tensor(10000.0) / self.d_model))
 
         # Apply the sin to even positions and the cos to odd positions
         pe[:, 0::2] = torch.sin(position * div_term)
@@ -42,3 +42,16 @@ class PositionalEncoding(nn.Module):
     def forward(self, x):
         x = x * (self.pe[:, : x.shape[1], :]).requires_grad_(False)
         return self.dropout(x)
+
+
+class LayerNormalization(nn.Module):
+    def __init__(self, eps: float = 10e-6) -> None:
+        super().__init__()
+        self.eps = eps
+        self.alpha = nn.Parameter(torch.ones(1))
+        self.bias = nn.Parameter(torch.zeros(1))
+
+    def forward(self, x):
+        mean = x.mean(dim=-1, keepdim=True)
+        std = x.std(dim=-1, keepdim=True)
+        return self.alpha * (x - mean) / (std - self.eps) + self.bias
