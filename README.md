@@ -1,5 +1,7 @@
 # Transformer
 
+This project is to code Transformer from scratch using only Python and PyTorch
+
 
 <div align="center">
 
@@ -21,7 +23,13 @@ There is $RELU$ activation in between, with $d_{model}$ = 512, $d_{ff}$ = 2048
 
  (batch, seq_len, d_model) -> (batch, seq_len, d_ff) -> (batch, seq_len, d_model)
 
+## Self-Attention
 
+- seq : sequence length
+- $d_{model}$ : size of the embedding vector
+- h : number of heads
+- $d_k$ = $d_v$ : $d_{model}$  / h
 
 # References
-[Attention is all you need](https://arxiv.org/abs/1706.03762)
+- [Attention is all you need](https://arxiv.org/abs/1706.03762)
+- [Convolutional Sequence to Sequence Learning](https://arxiv.org/abs/1705.03122)
