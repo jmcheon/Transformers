@@ -42,4 +42,3 @@ There is $RELU$ activation in between, with $d_{model}$ = 512, $d_{ff}$ = 2048
 
 # References
 - [Attention is all you need](https://arxiv.org/abs/1706.03762)
-- [Convolutional Sequence to Sequence Learning](https://arxiv.org/abs/1705.03122)
