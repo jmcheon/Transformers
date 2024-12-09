@@ -9,7 +9,7 @@ class InputEnbeddings(nn.Module):
         super().__init__()
         self.d_model = d_model
         self.vocab_size = vocab_size
-        self.embedding = nn.Enbedding(vocab_size, d_model)
+        self.embedding = nn.Embedding(vocab_size, d_model)
 
     def forward(self, x):
         return self.embedding(x) * math.sqrt(self.d_model)
@@ -92,7 +92,7 @@ class MultiHeadAttentionBlock(nn.Module):
         attention_scores = (query @ key.transpose(-2, -1)) / math.sqrt(d_k)
 
         # Mask
-        if mask:
+        if mask is not None:
             attention_scores.masked_fill_(mask == 0, -1e9)
 
         # Softmax

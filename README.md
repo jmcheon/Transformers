@@ -40,5 +40,10 @@ There is $RELU$ activation in between, with $d_{model}$ = 512, $d_{ff}$ = 2048
 
  (batch, seq_len, d_model) -> (batch, seq_len, d_ff) -> (batch, seq_len, d_model)
 
+
+
+# Training
+Dataset: [Huggingface opus_books](https://huggingface.co/datasets/Helsinki-NLP/opus_books)
+
 # References
 - [Attention is all you need](https://arxiv.org/abs/1706.03762)
