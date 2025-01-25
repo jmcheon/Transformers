@@ -58,8 +58,8 @@ def build_transformer(
     dropout: float = 0.1,
 ) -> Transformer:
     # Create the embedding layers
-    src_embed = InputEnbeddings(d_model, src_vocab_size)
-    tgt_embed = InputEnbeddings(d_model, tgt_vocab_size)
+    src_embed = InputEnbeddings(src_vocab_size, d_model)
+    tgt_embed = InputEnbeddings(tgt_vocab_size, d_model)
 
     # Create the positional layers
     src_pos = PositionalEncoding(d_model, src_seq_len, dropout)
