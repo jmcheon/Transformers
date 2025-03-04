@@ -85,3 +85,17 @@ def VGG_16_conv(image_input):
     p5 = x
 
     return p1, p2, p3, p4, p5
+
+
+def VGG_16_fcn(x, n_class):
+    x = tf.keras.layers.Flatten()(x)
+    x = tf.keras.layers.Dense(4096, activation="relu", name="fc1")(x)
+    x = tf.keras.layers.Dense(4096, activation="relu", name="fc2")(x)
+    x = tf.keras.layers.Dense(n_class, activation="softmax", name="prediction")(x)
+
+    return x
+
+
+def VGG_16(x, n_class):
+    _, _, _, _, x = VGG_16_conv(x)
+    x = VGG_16_fcn(x, n_class)
