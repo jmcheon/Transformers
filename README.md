@@ -1,9 +1,16 @@
-# Transformers
+# AI Architecture Implementations
 
-This repository is to implement Transformer-based models from scratch using only Python and PyTorch
+This repository contains implementations of modorne AI architectures from research papers.
 
+
+## Paper Naming Convention
+Each implementation follows this naming format:
+`
+{paper_alias}_{paper_year}
+`
 ## 📌 Computer Vision and Pattern Recognition
-- **Vision_Transformer_2020** - [An Image is Worth 16x16 Words: Transformer for Image Recognition at Scale](https://arxiv.org/abs/2010.11929)
+- **VGG_2014** - [Very Deep Convolutional Networks for Large-Scale Image Recognition](https://arxiv.org/pdf/1409.1556)
+- **FCN_2014** - [Fully Convolutional Networks for Semantic Segmentation](https://arxiv.org/pdf/1411.4038)
 
 ## 📌 Computation and Languages
 - **Transformer_2017** - [Attention Is All You Need](https://arxiv.org/abs/1706.03762)

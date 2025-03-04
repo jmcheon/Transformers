@@ -30,7 +30,6 @@ def VGG_16_conv(image_input):
         pool_stride=(2, 2),
         block_name="block1",
     )
-    p1 = x
 
     # Conv_2
     x = block(
@@ -43,7 +42,6 @@ def VGG_16_conv(image_input):
         pool_stride=(2, 2),
         block_name="block2",
     )
-    p2 = x
 
     # Conv_3
     x = block(
@@ -56,7 +54,6 @@ def VGG_16_conv(image_input):
         pool_stride=(2, 2),
         block_name="block3",
     )
-    p3 = x
 
     # Conv_4
     x = block(
@@ -69,7 +66,6 @@ def VGG_16_conv(image_input):
         pool_stride=(2, 2),
         block_name="block4",
     )
-    p4 = x
 
     # Conv_5
     x = block(
@@ -82,24 +78,23 @@ def VGG_16_conv(image_input):
         pool_stride=(2, 2),
         block_name="block5",
     )
-    p5 = x
 
-    return p1, p2, p3, p4, p5
+    return x
 
 
-def VGG_16_fcn(x, n_class):
+def VGG_16_fcn(x, n_classes):
     x = tf.keras.layers.Flatten()(x)
     x = tf.keras.layers.Dense(4096, activation="relu", name="fc1")(x)
     x = tf.keras.layers.Dropout(0.5)(x)
     x = tf.keras.layers.Dense(4096, activation="relu", name="fc2")(x)
     x = tf.keras.layers.Dropout(0.5)(x)
-    x = tf.keras.layers.Dense(n_class, activation="softmax", name="prediction")(x)
+    x = tf.keras.layers.Dense(n_classes, activation="softmax", name="prediction")(x)
 
     return x
 
 
-def VGG_16(x, n_class):
-    _, _, _, _, x = VGG_16_conv(x)
-    x = VGG_16_fcn(x, n_class)
+def VGG_16(x, n_classes):
+    x = VGG_16_conv(x)
+    x = VGG_16_fcn(x, n_classes)
 
     return x
