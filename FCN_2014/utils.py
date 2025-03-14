@@ -22,12 +22,6 @@ class_names = [
 # generate a list that contains one color for each class
 colors = sns.color_palette(None, len(class_names))
 
-# print class name - normalized RGB tuple pairs
-# the tuple values will be multiplied by 255 in the helper functions later
-# to convert to the (0,0,0) to (255,255,255) RGB values you might be familiar with
-for class_name, color in zip(class_names, colors):
-    print(f"{class_name} -- {color}")
-
 
 def fuse_with_pil(images):
     """
@@ -160,9 +154,35 @@ def list_show_annotation(dataset):
     plt.subplots_adjust(bottom=0.1, top=0.9, hspace=0.05)
 
     # we set the number of image-annotation pairs to 9
-    # feel free to make this a function parameter if you want
     for idx, (image, annotation) in enumerate(ds.take(9)):
         plt.subplot(3, 3, idx + 1)
         plt.yticks([])
         plt.xticks([])
         show_annotation_and_image(image.numpy(), annotation.numpy())
+
+
+def list_show_annotation_torch(dataloader):
+    """
+    Displays images and its annotations side by side from PyTorch DataLoader
+
+    Args:
+        dataloader (DataLoader): PyTorch dataloader
+    """
+
+    images, masks = next(iter(dataloader))
+
+    images = images.numpy().transpose(0, 2, 3, 1)  # from (B,C,H,W) to (B,H,W,C)
+    masks = masks.numpy().transpose(0, 2, 3, 1)  # from (B,num_classes,H,W) to (B,H,W,num_classes)
+
+    plt.figure(figsize=(25, 15))
+    plt.title("Images And Annotations")
+    plt.subplots_adjust(bottom=0.1, top=0.9, hspace=0.05)
+
+    # we set the number of image-annotation pairs to 9
+    # feel free to make this a function parameter if you want
+    n_images = min(9, images.shape[0])
+    for idx in range(n_images):
+        plt.subplot(3, 3, idx + 1)
+        plt.yticks([])
+        plt.xticks([])
+        show_annotation_and_image(images[idx], masks[idx])
