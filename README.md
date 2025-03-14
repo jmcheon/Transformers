@@ -1,6 +1,6 @@
-# AI Architecture Implementations
+# Paper Implementations
 
-This repository contains implementations of modorne AI architectures from research papers.
+This repository contains implementations of moderne AI architectures from research papers.
 
 
 ## Paper Naming Convention
