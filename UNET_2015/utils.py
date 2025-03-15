@@ -92,8 +92,6 @@ def display(display_list, titles=[], display_string=None):
     plt.show()
 
 
-
-
 def show_image_from_dataset(dataset):
     """
     display the first image and its mask from a dataset
