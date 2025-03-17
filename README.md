@@ -14,6 +14,7 @@ Each implementation follows this naming format:
 - **UNet_2015** - [U-Net: Convolutional Networks for Biomedical Image Segmentation](https://arxiv.org/abs/1505.04597)
 - **ResNet_2015** - [Deep Residual Learning for Image Recognition](https://arxiv.org/abs/1512.03385)
 - **MobileNetV1_2017** - [MobileNets: Efficient Convolutional Nerual Networks for Mobile Vision Applications](https://arxiv.org/abs/1704.04861)
+- **MobileNetV2_2018** - [MobileNetV2: Inverted Residuals and Linear Bottlenecks](https://arxiv.org/abs/1801.04381)
 
 ## 📌 Computation and Languages
 - **Transformer_2017** - [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
