@@ -12,7 +12,7 @@
 
 # Training
 
-- Dataset: SIGNS dataset
+- Dataset: [Finger SIGNS dataset](https://www.kaggle.com/datasets/maneesh99/signs-detection-dataset)
 
 # References
 
