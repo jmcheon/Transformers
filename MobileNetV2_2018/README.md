@@ -10,6 +10,17 @@
 
 </div>
 
+### Depth-wise separable block(v1) VS Bottleneck residual block(v2)
+
+<div align="center">
+
+  <img alt="MobileNetV2" src="./assets/comparison.png" width=800 height=400/>
+  <br/>
+  <figcaption>Figure 1: MobileNetV2 Architecture</figcaption>
+
+</div>
+
+
 # Training
 
 - Dataset: 
