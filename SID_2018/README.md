@@ -13,7 +13,19 @@
 
 # Training
 
-- Dataset: [Nikon Low-Light RAW Image Dataset](https://www.kaggle.com/datasets/razorblade/nikon-camera-dataset) 
+- Dataset: [Sony Low-Light RAW Image Dataset](https://www.kaggle.com/datasets/jungmoo/sid-sony-dataset/versions/1) 
+
+<div align="center">
+
+  <img alt="Output" src="./assets/output.png" width=800 height=200/>
+  <br/>
+  <figcaption>Figure 2: SID model output</figcaption>
+
+</div>
+the model trained for 10 epochs
+
+- Average SSIM: 0.6209
+- Average PSNR: 18.78 dB
 
 # References
 
