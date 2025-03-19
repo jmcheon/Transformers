@@ -45,32 +45,71 @@ class PositionalEncoding(nn.Module):
 
 
 class LayerNormalization(nn.Module):
-    def __init__(self, eps: float = 10e-6) -> None:
+    def __init__(self, eps: float = 1e-5) -> None:
+        """
+        Args:
+            eps (float): small constant for numerical stability
+        """
         super().__init__()
         self.eps = eps
-        self.alpha = nn.Parameter(torch.ones(1))
-        self.bias = nn.Parameter(torch.zeros(1))
+        self.gemma = nn.Parameter(torch.ones(1))
+        self.beta = nn.Parameter(torch.zeros(1))
 
     def forward(self, x):
+        """
+        Args:
+            x: input tensor of shape (batch_size, seq_len, d_model)
+
+        Returns:
+            normalized tensor of same shape
+        """
         mean = x.mean(dim=-1, keepdim=True)
         std = x.std(dim=-1, keepdim=True)
-        return self.alpha * (x - mean) / (std - self.eps) + self.bias
+        return self.gemma * (x - mean) / (std + self.eps) + self.beta
 
 
 class FeedForwardBlock(nn.Module):
     def __init__(self, d_model: int, d_ff: int, dropout: float) -> None:
+        """
+        Args:
+            d_model (int): embedding dimension
+            d_ff (int): inner layer dimension
+            dropout (float): dropout rate
+        """
         super().__init__()
         self.linear_1 = nn.Linear(d_model, d_ff)  # W1, b1
+        self.activation = torch.relu()
         self.dropout = nn.Dropout(dropout)
         self.linear_2 = nn.Linear(d_ff, d_model)  # W2, b2
 
     def forward(self, x):
+        """
+        Args:
+            x: input tensor of shape (batch_size, seq_len, d_model)
+
+        Returns:
+            output tensor of same shape
+        """
+        # (batch, seq_len, d_model) -> (batch, seq_len, d_ff)
+        x = self.linear_1(x)
+        x = self.activation(x)
+        x = self.dropout(x)
+        # (batch, seq_len, d_ff) -> (batch, seq_len, d_model)
+        x = self.linear_2(x)
+
+        return x
         # (batch, seq_len, d_model) -> (batch, seq_len, d_ff) -> (batch, seq_len, d_model)
-        return self.linear_2(self.dropout(torch.relu(self.linear_1(x))))
+        # return self.linear_2(self.dropout(torch.relu(self.linear_1(x))))
 
 
 class MultiHeadAttentionBlock(nn.Module):
     def __init__(self, d_model: int, h: int, dropout: float) -> None:
+        """
+        Arga:
+            d_model (int): embedding dimension
+            h (int): number of head
+            dropout (float): dropout rate
+        """
         super().__init__()
         self.d_model = d_model
         self.h = h
@@ -96,15 +135,22 @@ class MultiHeadAttentionBlock(nn.Module):
             attention_scores.masked_fill_(mask == 0, -1e9)
 
         # Softmax
-        attention_scores = attention_scores.softmax(dim=-1)  # (batch, h, seq_len, seq_len)
+        attention_weights = attention_scores.softmax(dim=-1)  # (batch, h, seq_len, seq_len)
 
         # Dropout
         if dropout:
-            attention_scores = dropout(attention_scores)
+            attention_weights = dropout(attention_weights)
 
-        return (attention_scores @ value), attention_scores
+        return (attention_weights @ value), attention_weights
 
     def forward(self, q, k, v, mask):
+        """
+        Args:
+            x: input tensor of shape (batch_size, seq_len, d_model)
+
+        Returns:
+            output tensor of same shape
+        """
         # (batch, seq_len, d_model) -> (batch, seq_len, d_model)
         query = self.w_q(q)
         key = self.w_k(k)
@@ -115,7 +161,7 @@ class MultiHeadAttentionBlock(nn.Module):
         key = key.view(key.shape[0], key.shape[1], self.h, self.d_k).transpose(1, 2)
         value = value.view(value.shape[0], value.shape[1], self.h, self.d_k).transpose(1, 2)
 
-        x, attention_scores = MultiHeadAttentionBlock.attention(
+        x, _ = MultiHeadAttentionBlock.attention(
             query, key, value, mask, self.dropout
         )
 
@@ -128,11 +174,23 @@ class MultiHeadAttentionBlock(nn.Module):
 
 class ResidualConnection(nn.Module):
     def __init__(self, dropout: float):
+        """
+        Args:
+            dropout (float): dropout rate
+        """
         super().__init__()
-        self.dropout = nn.Dropout(dropout)
         self.norm = LayerNormalization()
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, sublayer):
+        """
+        Args:
+            x: input tensor of shape (batch, num_patches + 1, d_model)
+            sublayer: the sublayer function to apply (attention or FFN)
+        """
+        # normalize x before sublayer
+        # apply dropout after sublayer
+        # add residual connection
         return x + self.dropout(sublayer(self.norm(x)))
 
 
@@ -149,6 +207,13 @@ class EncoderBlock(nn.Module):
         self.residual_connection = nn.ModuleList([ResidualConnection(dropout) for _ in range(2)])
 
     def forward(self, x, src_mask):
+        """
+        Args:
+            x: input tensor of shape (batch_size, seq_len, d_model)
+
+        Returns:
+            output tensor of same shape
+        """
         x = self.residual_connection[0](x, lambda x: self.self_attention_block(x, x, x, src_mask))
         x = self.residual_connection[1](x, self.feed_forward_block)
         return x
@@ -161,6 +226,13 @@ class Encoder(nn.Module):
         self.norm = LayerNormalization()
 
     def forward(self, x, mask):
+        """
+        Args:
+            x: input tensor of shape (batch_size, seq_len, d_model)
+
+        Returns:
+            output tensor of same shape
+        """
         for layer in self.layers:
             x = layer(x, mask)
         return self.norm(x)

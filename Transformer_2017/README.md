@@ -50,6 +50,16 @@ There is $RELU$ activation in between, with $d_{model}$ = 512, $d_{ff}$ = 2048
 
 (batch, seq_len, d_model) -> (batch, seq_len, d_ff) -> (batch, seq_len, d_model)
 
+## Residual Connection
+
+1. Self-Attention with Residual Connection
+
+$$x = x + Dropout(MultiHeadAttention(LayerNorm(x)))$$
+
+2. Feed-Forward Network with Residual Connection
+
+$$x = x + Dropout(FeedForward(LayerNorm(x)))$$
+
 # Training
 
 Dataset: [Huggingface opus_books](https://huggingface.co/datasets/Helsinki-NLP/opus_books)
