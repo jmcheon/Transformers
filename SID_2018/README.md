@@ -24,8 +24,9 @@
 </div>
 the model trained for 10 epochs
 
-- Average SSIM: 0.6209
-- Average PSNR: 18.78 dB
+- Average loss: 0.0892
+- Average SSIM: 0.6140
+- Average PSNR: 19.32 dB
 
 # References
 
