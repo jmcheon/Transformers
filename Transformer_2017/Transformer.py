@@ -1,5 +1,5 @@
 import torch.nn as nn
-from model import (
+from Transformer_2017.model import (
     Decoder,
     DecoderBlock,
     Encoder,

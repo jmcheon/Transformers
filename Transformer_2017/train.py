@@ -2,7 +2,7 @@ from pathlib import Path
 
 import torch
 import torch.nn as nn
-from config import get_config, get_weights_file_path
+from Transformer_2017.config import get_config, get_weights_file_path
 from dataset import BilingualDataset
 from datasets import load_dataset
 from tokenizers import Tokenizer
@@ -12,7 +12,7 @@ from tokenizers.trainers import WordLevelTrainer
 from torch.utils.data import DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
-from Transformer import build_transformer
+from Transformer_2017.Transformer import build_transformer
 
 DATASET = "opus_books"
 
