@@ -8,6 +8,11 @@
 
 </div>
 
+# Training
+
+- Dataset: CIFAR-10
+
 # References
 
 - https://arxiv.org/abs/2010.11929 
+- https://huggingface.co/docs/transformers/en/model_doc/vit

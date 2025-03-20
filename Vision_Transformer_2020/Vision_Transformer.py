@@ -1,5 +1,5 @@
 import torch.nn as nn
-from Vision_Transformer_2020.model import (
+from model import (
     Encoder,
     EncoderBlock,
     FeedForwardBlock,
@@ -32,10 +32,10 @@ def build_vision_transformer(
     patch_size: int,
     in_channels: int,
     num_classes: int,
-    num_layers: int,
     d_model: int,
     d_ff: int,
-    h: int,
+    h: int = 8,
+    num_layers: int = 12,
     dropout: float = 0.1,
 ) -> VisionTransformer:
     patch_embed = PatchEmbedding(img_size, patch_size, in_channels, d_model)

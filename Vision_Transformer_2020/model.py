@@ -132,7 +132,7 @@ class MultiHeadAttentionBlock(nn.Module):
 
         # output projection
         self.w_o = nn.Linear(d_model, d_model)
-        self.droput = nn.Dropout(dropout)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x):
         """

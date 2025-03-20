@@ -2,7 +2,6 @@ from pathlib import Path
 
 import torch
 import torch.nn as nn
-from Transformer_2017.config import get_config, get_weights_file_path
 from dataset import BilingualDataset
 from datasets import load_dataset
 from tokenizers import Tokenizer
@@ -12,6 +11,7 @@ from tokenizers.trainers import WordLevelTrainer
 from torch.utils.data import DataLoader, random_split
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+from Transformer_2017.config import get_config, get_weights_file_path
 from Transformer_2017.Transformer import build_transformer
 
 DATASET = "opus_books"
@@ -99,29 +99,36 @@ def train_model(config):
 
     Path(config["model_folder"]).mkdir(parents=True, exist_ok=True)
 
+    # dataset
     train_dataloader, val_dataloader, tokenizer_src, tokenizer_tgt = get_dataset(config)
+
+    # model
     model = get_model(config, tokenizer_src.get_vocab_size(), tokenizer_tgt.get_vocab_size())
     model = model.to(device)
 
     # Tensorboard
     writer = SummaryWriter(config["experiment_name"])
     optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"], eps=1e-9)
-
-    initial_epoch = 0
-    global_step = 0
-    if config["preload"]:
-        model_filename = get_weights_file_path(config, config["preload"])
-        print(f"Preloading model: {model_filename}")
-
-        state = torch.load(model_filename)
-        initial_epoch = state["epoch"] + 1
-        optimizer.load_state_dict(state["optimizer_state_dict"])
-        global_step = state["global_step"]
-
     loss_fn = nn.CrossEntropyLoss(
         ignore_index=tokenizer_src.token_to_id("[PAD]"), label_smoothing=0.1
     ).to(device)
 
+    initial_epoch = 0
+    global_step = 0
+
+    # preload
+    if config["preload"]:
+        model_filename = get_weights_file_path(config, config["preload"])
+        print(f"Preloading model: {model_filename}")
+
+        state = torch.load(model_filename, weights_only=True)
+
+        model.load_state_dict(state["model_state_dict"])
+        initial_epoch = state["epoch"] + 1
+        optimizer.load_state_dict(state["optimizer_state_dict"])
+        global_step = state["global_step"]
+
+    # training
     for epoch in range(initial_epoch, config["num_epochs"]):
         model.train()
         batch_iterator = tqdm(train_dataloader, desc=f"Epoch [{epoch:02d}/{config['num_epochs']}]")
