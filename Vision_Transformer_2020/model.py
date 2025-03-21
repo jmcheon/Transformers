@@ -99,11 +99,11 @@ class FeedForwardBlock(nn.Module):
         Returns:
             output tensor of same shape
         """
-        # (batch, seq_len, d_model) -> (batch, seq_len, d_ff)
+        # (batch, num_patches + 1, d_model) -> (batch, num_patches + 1, d_ff)
         x = self.linear_1(x)
         x = self.activation(x)
         x = self.dropout(x)
-        # (batch, seq_len, d_ff) -> (batch, seq_len, d_model)
+        # (batch, num_patches + 1, d_ff) -> (batch, num_patches + 1, d_model)
         x = self.linear_2(x)
 
         return x

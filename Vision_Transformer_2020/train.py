@@ -40,6 +40,8 @@ def get_model(config, num_classes):
         num_classes,
         config["d_model"],
         config["d_ff"],
+        config["num_heads"],
+        config["num_layers"],
     )
     return model
 
