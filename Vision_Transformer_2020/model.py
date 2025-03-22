@@ -54,15 +54,16 @@ class PatchEmbedding(nn.Module):
 
 
 class LayerNormalization(nn.Module):
-    def __init__(self, eps: float = 1e-5):
+    def __init__(self, d_model: int, eps: float = 1e-5):
         """
         Args:
+            d_model (int): embedding dimension
             eps (float): small constant for numerical stability
         """
         super().__init__()
         self.eps = eps
-        self.gemma = nn.Parameter(torch.ones(1))
-        self.beta = nn.Parameter(torch.zeros(1))
+        self.weight = nn.Parameter(torch.ones(d_model))
+        self.bias = nn.Parameter(torch.zeros(d_model))
 
     def forward(self, x):
         """
@@ -73,8 +74,11 @@ class LayerNormalization(nn.Module):
             normalized tensor of same shape
         """
         mean = x.mean(dim=-1, keepdim=True)
-        std = x.std(dim=-1, keepdim=True)
-        return self.gemma * (x - mean) / (std + self.eps) + self.beta
+        # bessel's correction
+        # std = x.std(dim=-1, keepdim=True)
+        # population std
+        std = x.var(dim=-1, keepdim=True, unbiased=False).sqrt()
+        return self.weight * (x - mean) / (std + self.eps) + self.bias
 
 
 class FeedForwardBlock(nn.Module):
@@ -182,13 +186,14 @@ class MultiHeadAttentionBlock(nn.Module):
 
 
 class ResidualConnection(nn.Module):
-    def __init__(self, dropout: float):
+    def __init__(self, d_model: int, dropout: float):
         """
         Args:
+            d_model (int): embedding dimension
             dropout (float): dropout rate
         """
         super().__init__()
-        self.norm = LayerNormalization()
+        self.norm = nn.LayerNorm(d_model)
         self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, sublayer):
@@ -208,12 +213,15 @@ class EncoderBlock(nn.Module):
         self,
         self_attention_block: MultiHeadAttentionBlock,
         feed_forward_block: FeedForwardBlock,
+        d_model: int,
         dropout: float,
     ):
         super().__init__()
         self.self_attention_block = self_attention_block
         self.feed_forward_block = feed_forward_block
-        self.residual_connection = nn.ModuleList([ResidualConnection(dropout) for _ in range(2)])
+        self.residual_connection = nn.ModuleList(
+            [ResidualConnection(d_model, dropout) for _ in range(2)]
+        )
 
     def forward(self, x):
         """
@@ -229,10 +237,10 @@ class EncoderBlock(nn.Module):
 
 
 class Encoder(nn.Module):
-    def __init__(self, layers=nn.ModuleList):
+    def __init__(self, d_model: int, layers=nn.ModuleList):
         super().__init__()
         self.layers = layers
-        self.norm = LayerNormalization()
+        self.norm = nn.LayerNorm(d_model)
 
     def forward(self, x):
         """

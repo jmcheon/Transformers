@@ -46,7 +46,7 @@ def get_model(config, num_classes):
     return model
 
 
-def train_model(config):
+def train_model(model, config):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using device:", device)
 
@@ -56,7 +56,6 @@ def train_model(config):
     train_loader, test_loader = get_dataset(config)
 
     # model
-    model = get_model(config, 10)
     model = model.to(device)
 
     # Tensorboard
@@ -141,10 +140,14 @@ def get_model_state(config):
     return state
 
 
-def evaluate_model(model, test_loader, device):
+def evaluate_model(model, test_loader):
     """
     Evaluates the model on the test dataset.
     """
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("Using device:", device)
+    model = model.to(device)
+
     model.eval()
     correct = 0
     total = 0
@@ -171,4 +174,5 @@ def evaluate_model(model, test_loader, device):
 if __name__ == "__main__":
     # warnings.filterwarnings("ignore")
     config = get_config()
-    train_model(config)
+    model = get_model(config, 10)
+    train_model(model, config)

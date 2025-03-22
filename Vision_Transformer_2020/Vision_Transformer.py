@@ -9,7 +9,7 @@ from model import (
 
 
 class VisionTransformer(nn.Module):
-    def __init__(self, patch_embed: PatchEmbedding, encoder: Encoder, mlp_head: nn.Sequential):
+    def __init__(self, patch_embed: PatchEmbedding, encoder: Encoder, mlp_head: nn.Linear):
         super().__init__()
         self.patch_embed = patch_embed
         self.encoder = encoder
@@ -44,12 +44,12 @@ def build_vision_transformer(
     for _ in range(num_layers):
         self_attention_block = MultiHeadAttentionBlock(d_model, h, dropout)
         feed_forward_block = FeedForwardBlock(d_model, d_ff, dropout)
-        encoder_block = EncoderBlock(self_attention_block, feed_forward_block, dropout)
+        encoder_block = EncoderBlock(self_attention_block, feed_forward_block, d_model, dropout)
         encoder_blocks.append(encoder_block)
 
-    encoder = Encoder(nn.ModuleList(encoder_blocks))
+    encoder = Encoder(d_model, nn.ModuleList(encoder_blocks))
 
-    mlp_head = nn.Sequential(nn.Linear(d_model, num_classes))
+    mlp_head = nn.Linear(d_model, num_classes)
 
     vit = VisionTransformer(patch_embed, encoder, mlp_head)
 
