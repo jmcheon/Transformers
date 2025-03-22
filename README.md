@@ -1,4 +1,4 @@
-# Paper Implementation
+# Transformers
 
 This repository contains implementations of moderne AI architectures from research papers.
 
