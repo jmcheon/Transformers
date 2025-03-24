@@ -4,7 +4,7 @@
 
 <div align="center">
 
-  <img alt="Transformer" src="../assets/Transformer.png" width=400 height=600/>
+  <img alt="Transformer" src="./assets/Transformer.png" width=400 height=600/>
   <br/>
   <figcaption>Figure 1: The Transformer - model architecture</figcaption>
 
@@ -28,7 +28,7 @@ where, $pos$ is the position and $i$ is the dimension
 
 <div align="center">
 
-  <img alt="Scaled Dot-Product Attention" src="../assets/Scaled Dot-Product Attention.png" width=200 height=300/>
+  <img alt="Scaled Dot-Product Attention" src="./assets/Scaled Dot-Product Attention.png" width=200 height=300/>
   <br/>
   <figcaption>Figure 2: Scaled Dot-Product Attention mechanism</figcaption>
 

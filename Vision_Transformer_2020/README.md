@@ -2,7 +2,7 @@
 
 <div align="center">
 
-  <img alt="Vision Transformer" src="../assets/ViT.png" width=600 height=400/>
+  <img alt="Vision Transformer" src="./assets/ViT.png" width=600 height=400/>
   <br/>
   <figcaption>Figure 1: Vision Transformer architecture</figcaption>
 
