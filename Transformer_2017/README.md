@@ -50,15 +50,33 @@ There is $RELU$ activation in between, with $d_{model}$ = 512, $d_{ff}$ = 2048
 
 (batch, seq_len, d_model) -> (batch, seq_len, d_ff) -> (batch, seq_len, d_model)
 
-## Residual Connection
+## Residual Connection & Post-Norm
 
 1. Self-Attention with Residual Connection
 
-$$x = x + Dropout(MultiHeadAttention(LayerNorm(x)))$$
+$$x = LayerNorm(x + Dropout(MultiHeadAttention(x))))$$
 
 2. Feed-Forward Network with Residual Connection
 
-$$x = x + Dropout(FeedForward(LayerNorm(x)))$$
+$$x = LayerNorm(x + Dropout(FeedForward(x)))$$
+
+## Dropout
+Dropout is applied in 3 places
+### Encoder Block
+$$x = x + Dropout(MultiHeadAttention(x))$$
+
+$$x = LayerNorm(x)$$
+
+Includes inner dropout after ReLU in FeedForwardBlock
+$$x = x + Dropout(FeedForward(x))$$  
+
+$$x = LayerNorm(x)$$
+
+### Embeddings
+$$x = Embedding(tokens) + PositionalEncoding$$
+
+$$x = Dropout(x)$$
+
 
 # Training
 

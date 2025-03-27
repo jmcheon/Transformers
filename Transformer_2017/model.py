@@ -188,10 +188,11 @@ class ResidualConnection(nn.Module):
             x: input tensor of shape (batch, num_patches + 1, d_model)
             sublayer: the sublayer function to apply (attention or FFN)
         """
-        # normalize x before sublayer
         # apply dropout after sublayer
+        # normalize x after sublayer
         # add residual connection
-        return x + self.dropout(sublayer(self.norm(x)))
+        return self.norm(x + self.dropout(sublayer(x)))
+        # return x + self.dropout(sublayer(self.norm(x)))
 
 
 class EncoderBlock(nn.Module):
