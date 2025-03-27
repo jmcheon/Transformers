@@ -75,8 +75,10 @@ class PatchMerging(nn.Module):
         # (B, new_num_patches, 4*C) -> (B, new_num_patches, 2*C)
         x = self.reduction(x)
 
+        return x
 
-class MLP(nn.Module):
+
+class FeedForwardBlock(nn.Module):
     def __init__(
         self,
         in_features: int,
@@ -101,7 +103,7 @@ class MLP(nn.Module):
         return x
 
 
-class WindowMultiHeadAttentionBlock(nn.Module):
+class WindowAttentionBlock(nn.Module):
     def __init__(self, d_model: int, h: int, window_size: int, dropout: float = 0.1):
         """
         Args:
@@ -116,11 +118,15 @@ class WindowMultiHeadAttentionBlock(nn.Module):
         self.window_size = window_size
         assert d_model % h == 0, "d_model is not divisible by h"
         # scaled dot-product factor
+        self.head_dim = d_model // self.h
         self.scale = (d_model // h) ** -5
 
-        self.qkv = nn.Linear(d_model, d_model * 3, bias=False)
-        self.dropout = nn.Dropout(dropout)
+        self.query = nn.Linear(d_model, d_model)
+        self.key = nn.Linear(d_model, d_model)
+        self.value = nn.Linear(d_model, d_model)
+
         self.proj = nn.Linear(d_model, d_model)
+        self.dropout = nn.Dropout(dropout)
 
     def forward(self, x, mask=None):
         """
@@ -133,12 +139,9 @@ class WindowMultiHeadAttentionBlock(nn.Module):
         # (batch * num_windows, num_patches, d_model)
         batch_size, num_patches, d_model = x.shape
 
-        qkv = (
-            self.qkv(x)
-            .reshape(batch_size, num_patches, 3, self.h, d_model // self.h)
-            .permute(2, 0, 3, 1, 4)  # (3, batch, h, num_patches, head_dim)
-        )
-        query, key, value = qkv[0], qkv[1], qkv[2]
+        query = self.query(x).view(batch_size, num_patches, self.h, self.head_dim).transpose(1, 2)
+        key = self.key(x).view(batch_size, num_patches, self.h, self.head_dim).transpose(1, 2)
+        value = self.value(x).view(batch_size, num_patches, self.h, self.head_dim).transpose(1, 2)
 
         # (batch, h, num_patches, head_dim) -> (batch, h, num_patches, num_patches)
         attention_scores = (query @ key.transpose(-2, -1)) * self.scale
@@ -208,50 +211,50 @@ class SwinTransformerBlock(nn.Module):
         self,
         dim: int,
         input_resolution: Tuple[int],
-        num_heads: int,
+        window_attention_block: WindowAttentionBlock,
+        feed_forward_block: FeedForwardBlock,
         window_size: int = 7,
         shift_size: int = 4,
-        mlp_ratio: float = 4.0,
-        dropout: float = 0.0,
     ):
         super().__init__()
         self.dim = dim
         self.input_resolution = input_resolution  # (H, W)
-        self.num_heads = num_heads
         self.window_size = window_size
         self.shift_size = shift_size
 
         assert 0 <= shift_size < window_size, "shift_size must be in [0, window_size)"
 
         self.norm1 = nn.LayerNorm(dim)
-        self.window_self_attention_block = WindowMultiHeadAttentionBlock(
-            dim, num_heads, window_size, dropout
-        )
+        self.window_attention_block = window_attention_block
 
         self.norm2 = nn.LayerNorm(dim)
-        self.mlp = MLP(dim, int(dim * mlp_ratio), dropout=dropout)
+        self.mlp = feed_forward_block
 
-    def create_attention_mask(self, H, W, window_size=4, shift_size=2, device="cpu"):
+    def create_attention_mask(self, H, W, device="cpu"):
         # region labels for each patch
         img_mask = torch.zeros((1, H, W, 1), device=device)
 
         cnt = 0
 
-        for h in range(0, H, window_size):
-            for w in range(0, W, window_size):
-                img_mask[:, h : h + window_size, w : w + window_size, :] = cnt
+        for h in range(0, H, self.window_size):
+            for w in range(0, W, self.window_size):
+                img_mask[:, h : h + self.window_size, w : w + self.window_size, :] = cnt
                 cnt += 1
 
         # apply cyclic shift
-        shifted_mask = torch.roll(img_mask, shifts=(-shift_size, -shift_size), dims=(1, 2))
+        shifted_mask = torch.roll(
+            img_mask, shifts=(-self.shift_size, -self.shift_size), dims=(1, 2)
+        )
 
         # partition into windows
         B, H_, W_, C = shifted_mask.shape
-        x = shifted_mask.view(B, H_ // window_size, window_size, W_ // window_size, window_size, C)
+        x = shifted_mask.view(
+            B, H_ // self.window_size, self.window_size, W_ // self.window_size, self.window_size, C
+        )
         x = x.permute(0, 1, 3, 2, 4, 5).contiguous()
 
         # (num_windows, window_size²)
-        windows = x.view(-1, window_size * window_size)
+        windows = x.view(-1, self.window_size * self.window_size)
 
         # compute the attention mask (num_windows, window_size², window_size²)
         attention_mask = windows.unsqueeze(1) - windows.unsqueeze(2)
@@ -267,6 +270,9 @@ class SwinTransformerBlock(nn.Module):
 
         x = x.view(B, H, W, C)
 
+        shortcut = x
+        x = self.norm1(x)
+
         # cyclic shift if shift_size > 0
         if self.shift_size > 0:
             shifted_x = torch.roll(x, shifts=(-self.shift_size, -self.shift_size), dims=(1, 2))
@@ -281,8 +287,8 @@ class SwinTransformerBlock(nn.Module):
         else:
             attention_mask = None
 
-        # self-attention
-        attention_window = self.window_self_attention_block(self.norm1(x_windows), attention_mask)
+        # self-attention & residual
+        attention_window = self.window_attention_block(x_windows, attention_mask)
 
         # merge windows back (B, H, W, C)
         shifted_x = window_reverse(attention_window, self.window_size, H, W)
@@ -293,9 +299,23 @@ class SwinTransformerBlock(nn.Module):
         else:
             x = shifted_x
 
+        # residual
+        x = x + shortcut
+
         x = x.view(B, H * W, C)
 
         # FFN
         x = x + self.mlp(self.norm2(x))  # residual
 
+        return x
+
+
+class SwinEncoder(nn.Module):
+    def __init__(self, layers=nn.ModuleList):
+        super().__init__()
+        self.layers = layers
+
+    def forward(self, x):
+        for layer in self.layers:
+            x = layer(x)
         return x

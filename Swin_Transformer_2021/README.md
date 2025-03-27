@@ -89,6 +89,17 @@ Window Layout:
 ## Patch Merging
 Swin Transformer's version of downsampling: reducing spatial dimensions while increasing the feature dimension (like pooling + channel expansion in CNNs)
 
+## Residual Connection & Pre-Norm
+
+1. Self-Attention with Residual Connection
+
+$$x = x + Dropout(MultiHeadAttention(LayerNorm(x)))$$
+
+2. Feed-Forward Network with Residual Connection
+
+$$x = x + Dropout(FeedForward(LayerNorm(x)))$$
+
 # References
 
 - https://arxiv.org/abs/2103.14030
+- https://huggingface.co/docs/transformers/en/model_doc/swin
