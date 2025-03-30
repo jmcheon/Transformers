@@ -112,11 +112,6 @@ def train_model(model, config):
             batch_iterator.set_postfix(
                 loss=f"{loss.item():6.3f}", accuracy=f"{100 * correct / total:.2f}"
             )
-        avg_loss = total_loss / len(train_loader)
-        accuracy = 100 * correct / total
-        print(
-            f"Epoch [{epoch:02d}/{config["num_epochs"]}] loss: {avg_loss:.4f}, accuracy: {accuracy:.2f}"
-        )
 
         # Save model at the end of every epoch
         model_filename = get_weights_file_path(config, f"{epoch:02d}")

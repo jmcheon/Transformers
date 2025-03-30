@@ -8,6 +8,16 @@
 
 </div>
 
+## Residual Connection & Pre-Norm
+
+1. Self-Attention with Residual Connection
+
+$$x = x + Dropout(MultiHeadAttention(LayerNorm(x)))$$
+
+2. Feed-Forward Network with Residual Connection
+
+$$x = x + Dropout(FeedForward(LayerNorm(x)))$$
+
 # Training
 
 - Dataset: CIFAR-10
