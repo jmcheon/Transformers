@@ -22,6 +22,35 @@ class_names = [
 # generate a list that contains one color for each class
 colors = sns.color_palette(None, len(class_names))
 
+def compute_metrics(y_true, y_pred):
+    """
+    Compute IOU and Dice score
+    Args:
+        y_true (tensor): ground truth segmentation masks/label maps
+        y_pred (tensor): predicted segmentation masks/label maps
+
+    Returns:
+        tuple of floats: IOU and Dice score
+    """
+
+    class_wise_iou = []
+    class_wise_dice_score = []
+
+    smoothing_factor = 0.00001
+
+    for i in range(1, len(class_names)):
+        intersection = np.sum((y_pred == i) * (y_true == i))
+        y_true_area = np.sum(y_true == i)
+        y_pred_area = np.sum(y_pred == i)
+        combined_area = y_true_area + y_pred_area
+
+        iou = (intersection + smoothing_factor) / (combined_area - intersection + smoothing_factor)
+        class_wise_iou.append(iou)
+
+        dice_score = 2 * ((intersection + smoothing_factor) / (combined_area + smoothing_factor))
+        class_wise_dice_score.append(dice_score)
+
+    return class_wise_iou, class_wise_dice_score
 
 def fuse_with_pil(images):
     """
@@ -73,7 +102,9 @@ def give_color_to_annotation(annotation):
     return seg_img
 
 
-def show_predictions(image, labelmaps, titles, iou_list, dice_score_list):
+def show_predictions(
+    image, labelmaps, titles, iou_list, dice_score_list, image_ordering="channels_last"
+):
     """
     Displays the images with the ground truth and predicted label maps
 
@@ -90,6 +121,8 @@ def show_predictions(image, labelmaps, titles, iou_list, dice_score_list):
 
     image = image + 1
     image = image * 127.5
+    if image_ordering == "channels_first":
+        image = image.transpose(1, 2, 0)
     images = np.uint8([image, pred_img, true_img])
 
     metrics_by_id = [
