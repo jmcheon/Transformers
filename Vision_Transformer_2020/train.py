@@ -8,7 +8,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torchvision.datasets import CIFAR10
 from torchvision.transforms import transforms
 from tqdm import tqdm
-from Vision_Transformer import build_vision_transformer
+from Vision_Transformer import build_vitclassifier
 
 
 def get_dataset(config):
@@ -33,7 +33,7 @@ def get_dataset(config):
 
 
 def get_model(config, num_classes):
-    model = build_vision_transformer(
+    model = build_vitclassifier(
         config["img_size"],
         config["patch_size"],
         config["in_channels"],
