@@ -46,6 +46,68 @@ class Transformer(nn.Module):
         return self.projection_layer(x)
 
 
+class TransformerEncoder(nn.Module):
+    def __init__(
+        self,
+        embed: InputEnbeddings,
+        pos: PositionalEncoding,
+        encoder: Encoder,
+        projection_layer: ProjectionLayer,
+    ):
+        super().__init__()
+        self.embed = embed
+        self.pos = pos
+        self.encoder = encoder
+        self.projection_layer = projection_layer
+
+    def forward(self, x, mask):
+        x = self.embed(x)
+        x = self.pos(x)
+        return self.encoder(x, mask)
+
+    def project(self, x):
+        return self.projection_layer(x)
+
+
+def build_transformer_encoder(
+    vocab_size: int,
+    seq_len: int,
+    d_model: int = 512,
+    d_ff: int = 2048,
+    num_layers: int = 6,
+    h: int = 8,
+    dropout: float = 0.1,
+) -> TransformerEncoder:
+    # Create the embedding layers
+    embed = InputEnbeddings(vocab_size, d_model)
+    # Create the positional layers
+    pos = PositionalEncoding(d_model, seq_len, dropout)
+
+    # Create the encoder blocks
+    encoder_blocks = []
+    for _ in range(num_layers):
+        encoder_self_attention_block = MultiHeadAttentionBlock(d_model, h, dropout)
+        feed_forward_block = FeedForwardBlock(d_model, d_ff, dropout)
+        encoder_block = EncoderBlock(encoder_self_attention_block, feed_forward_block, dropout)
+        encoder_blocks.append(encoder_block)
+
+    # Create the encoder and the decoder
+    encoder = Encoder(nn.ModuleList(encoder_blocks))
+
+    # Create the projection layer
+    projection_layer = ProjectionLayer(d_model, vocab_size)
+
+    # Create the transformer
+    transformer = TransformerEncoder(embed, pos, encoder, projection_layer)
+
+    # Initialize the parameters
+    for p in transformer.parameters():
+        if p.dim() > 1:
+            nn.init.xavier_uniform_(p)
+
+    return transformer
+
+
 def build_transformer(
     src_vocab_size: int,
     tgt_vocab_size: int,
@@ -53,7 +115,7 @@ def build_transformer(
     tgt_seq_len: int,
     d_model: int = 512,
     d_ff: int = 2048,
-    N: int = 6,
+    num_layers: int = 6,
     h: int = 8,
     dropout: float = 0.1,
 ) -> Transformer:
@@ -67,7 +129,7 @@ def build_transformer(
 
     # Create the encoder blocks
     encoder_blocks = []
-    for _ in range(N):
+    for _ in range(num_layers):
         encoder_self_attention_block = MultiHeadAttentionBlock(d_model, h, dropout)
         feed_forward_block = FeedForwardBlock(d_model, d_ff, dropout)
         encoder_block = EncoderBlock(encoder_self_attention_block, feed_forward_block, dropout)
@@ -75,7 +137,7 @@ def build_transformer(
 
     # Create the decoder blocks
     decoder_blocks = []
-    for _ in range(N):
+    for _ in range(num_layers):
         decoder_self_attention_block = MultiHeadAttentionBlock(d_model, h, dropout)
         decoder_cross_attention_block = MultiHeadAttentionBlock(d_model, h, dropout)
         feed_forward_block = FeedForwardBlock(d_model, d_ff, dropout)
