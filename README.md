@@ -18,6 +18,7 @@ Each implementation follows this naming format:
 - **MobileNetV2_2018** - [MobileNetV2: Inverted Residuals and Linear Bottlenecks](https://arxiv.org/abs/1801.04381)
 - **SID_2018** - [Learning to See in the Dark](https://arxiv.org/abs/1805.01934)
 - **Vision_Transformer_2020** - [An Image is Wroth 16x16 Words: Transformer for Image Recognition at Scale](https://arxiv.org/abs/2010.11929)
+- **CLIP_2021** - [Learning Transferable Visual Models from Natural Language Supervision](https://arxiv.org/abs/2103.00020)
 - **Swin_Transformer_2021** - [Hierarchical Vision Transformer Using Shifted Windows](https://arxiv.org/abs/2103.14030)
 - **SwinIR_2021** - [SwinIR: Image Restoration Using Swin Transformer](https://arxiv.org/abs/2108.10257)
 
