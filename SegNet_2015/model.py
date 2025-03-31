@@ -29,7 +29,6 @@ class SegNet(nn.Module):
 
         self.pool = nn.MaxPool2d(kernel_size=2, stride=2, return_indices=True)
         self.unpool = nn.MaxUnpool2d(kernel_size=2, stride=2)
-        self.softmax = nn.Softmax()
 
     def _encoder_block(self, n_conv, in_channels, out_channels):
         layers = []
@@ -71,7 +70,5 @@ class SegNet(nn.Module):
             size = sizes[-(i + 1)]
             x = self.unpool(x, indices, output_size=size)
             x = block(x)
-
-        x = self.softmax(x)
 
         return x

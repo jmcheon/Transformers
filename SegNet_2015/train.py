@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from config import get_weights_file_path
-from FCN_2014.dataset import SegmentationDatset
+from dataset import SegmentationDatset
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
@@ -94,7 +94,6 @@ def train_model(model, config):
 
     writer = SummaryWriter(config["experiment_name"])
     optimizer = optim.Adam(model.parameters(), lr=config["lr"])
-    # optimizer = optim.SGD(model.parameters(), lr=config["lr"], momentum=0.9)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
     criterion = nn.CrossEntropyLoss().to(device)
 
@@ -142,9 +141,13 @@ def train_model(model, config):
             global_step += 1
             total_loss += loss.item()
             _, predicted = outputs.max(1)
-            _, targets = labels.max(1)
-            correct += predicted.eq(targets).sum().item()
-            total += targets.numel()
+            # _, targets = labels.max(1)
+
+            predicted = predicted.view(labels.size(0), -1)
+            labels = labels.view(labels.size(0), -1)
+
+            correct += (predicted == labels).sum().item()
+            total += labels.numel()
 
             batch_iterator.set_postfix(
                 loss=f"{loss.item():6.3f}", accuracy=f"{100 * correct / total:.2f}"
