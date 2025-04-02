@@ -31,6 +31,13 @@ VOC_CLASSES = [
 
 
 class VOCDataset(nn.Module):
+    """
+    - box with the highest IoU responsible
+    - store one object per grid cell
+    - assign to one of B boxes based on the best IoU
+    - (x, y) relative to cell, (w, h) relative to image
+    - one-hot encoded in the last C entries
+    """
     def __init__(
         self,
         img_dir: str,
