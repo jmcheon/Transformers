@@ -24,7 +24,7 @@ The total numbers predicted per grid cell: `B * 5 + C`
 - `x, y`: center coordinates relative to the cell
 - `w, h`: width & height relative to image
 - `confidence`: 
-    - score: pr(obeject) * IoU(pred, truth)
+    - score: pr(object) * IoU(pred, truth)
 	- high if an object exists and the predicted box is accurate
 
 
@@ -36,7 +36,7 @@ output shape: (batch, S, S, B * 5 + C)
 
 - Penalizes differences in box coordinates (`x, y, w, h`)
 
-$$\lambda_{coord}\sum_{i=0}^{S^2}\sum_{j=0}^{B} 1_{ij}^{obj}[(x_i - \hat x_i)^2 + (y_i - \hat y_i)^2] + \lambda_{coord}\sum_{i=0}^{S^2}\sum_{j=0}^{B} 1_{ij}^{obj}[(\sqrt w_i - \sqrt{\hat w_i})^2 + (\sqrt h_i - \sqrt{\hat h_i})^2]$$
+$$\lambda_{coord}\sum_{i=0}^{S^2}\sum_{j=0}^{B} 1_{ij}^{obj}[(x_i - \hat x_i)^2 + (y_i - \hat y_i)^2] + \lambda_{coord}\sum_{i=0}^{S^2}\sum_{j=0}^{B} 1_{ij}^{obj}[(\sqrt {w_i} - \sqrt{\hat w_i})^2 + (\sqrt {h_i} - \sqrt{\hat h_i})^2]$$
 
 ### 2. Confidence Loss
 
@@ -54,7 +54,7 @@ $$\sum_{i=0}^{S^2} 1_{ij}^{obj} \sum_{c \in classes}(p_i(c) - \hat p_i(c))^2$$
 
 ## Full Loss Equation
 
-$$Loss = \lambda_{coord}\sum_{i=0}^{S^2}\sum_{j=0}^{B} 1_{ij}^{obj}[(x_i - \hat x_i)^2 + (y_i - \hat y_i)^2] + \lambda_{coord}\sum_{i=0}^{S^2}\sum_{j=0}^{B} 1_{ij}^{obj}[(\sqrt w_i - \sqrt{\hat w_i})^2 + (\sqrt h_i - \sqrt{\hat h_i})^2]$$
+$$Loss = \lambda_{coord}\sum_{i=0}^{S^2}\sum_{j=0}^{B} 1_{ij}^{obj}[(x_i - \hat x_i)^2 + (y_i - \hat y_i)^2] + \lambda_{coord}\sum_{i=0}^{S^2}\sum_{j=0}^{B} 1_{ij}^{obj}[(\sqrt {w_i} - \sqrt{\hat w_i})^2 + (\sqrt {h_i} - \sqrt{\hat h_i})^2]$$
 $$ + \sum_{i=0}^{S^2}\sum_{j=0}^{B} 1_{ij}^{obj}(C_i - \hat C_i)^2 + \lambda_{noobj}\sum_{i=0}^{S^2}\sum_{j=0}^{B} 1_{ij}^{noobj}(C_i - \hat C_i)^2 + \sum_{i=0}^{S^2} 1_{ij}^{obj} \sum_{c \in classes}(p_i(c) - \hat p_i(c))^2$$
 
 Where:
