@@ -8,7 +8,7 @@ def get_config():
         "num_classes": 20,
         "batch_size": 64,
         "num_epochs": 70,
-        "lr": 1e-2,
+        "lr": 1e-3,
         "model_folder": "/weights",
         "model_basename": "yolov1_model_",
         "preload": None,

@@ -1,3 +1,4 @@
+import numpy as np
 import torch
 
 
@@ -76,3 +77,40 @@ def compute_iou_vectorized(pred_boxes, gt_box, smoothing_factor=1e-6):
     union_area = pred_area + gt_area - inter_area + smoothing_factor
 
     return inter_area / union_area
+
+
+def decode_predictions(output, S=7, B=2, C=20, conf_threshold=0.3):
+    """
+    Convert YOLOv1 output (S, S, B * 5 + C) to list of boxes
+
+    Each box is (x1, y1, x2, y2, class_id, confidence)
+    """
+    boxes = []
+    output = output.detach().cpu().numpy()
+
+    for i in range(S):
+        for j in range(S):
+            cell = output[i, j]
+            class_probs = cell[B * 5 :]
+            class_id = np.argmax(class_probs)
+            class_score = class_probs[class_id]
+
+            for b in range(B):
+                x, y, w, h, conf = cell[b * 5 : (b + 1) * 5]
+                confidence = conf * class_score
+
+                if confidence < conf_threshold:
+                    continue
+
+                # convert to absolut image coordinates
+                x_abs = (j + x) / S
+                y_abs = (i + y) / S
+
+                x1 = x_abs - w / 2
+                y1 = y_abs - h / 2
+                x2 = x_abs + w / 2
+                y2 = y_abs + h / 2
+
+                boxes.append([x1, y1, x2, y2, class_id, confidence])
+
+    return boxes

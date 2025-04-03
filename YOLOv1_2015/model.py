@@ -9,7 +9,7 @@ class YOLO(nn.Module):
         self.B = num_boxes
         self.C = num_classes
 
-        # simplified feature extractor
+        # feature extractor
         self.features = nn.Sequential(
             self._conv_block(3, 64, 7, stride=2, padding=3),
             nn.MaxPool2d(kernel_size=2, stride=2),
@@ -56,7 +56,7 @@ class YOLO(nn.Module):
             nn.Linear(4096, self.S * self.S * (self.B * 5 + self.C)),
         )
 
-    def _conv_block(in_c, out_c, kernel_size, stride=1, padding=0):
+    def _conv_block(self, in_c, out_c, kernel_size, stride=1, padding=0):
         return nn.Sequential(
             nn.Conv2d(in_c, out_c, kernel_size=kernel_size, stride=stride, padding=padding),
             nn.LeakyReLU(0.1),
@@ -77,6 +77,7 @@ class YOLOLoss(nn.Module):
         num_classes: int = 20,
         lambda_coord: int = 5,
         lambda_noobj: float = 0.5,
+        eps: float = 1e-6,
     ):
         super().__init__()
         self.mse = nn.MSELoss(reduction="sum")
@@ -86,6 +87,7 @@ class YOLOLoss(nn.Module):
         self.C = num_classes
         self.lambda_coord = lambda_coord
         self.lambda_noobj = lambda_noobj
+        self.eps = eps
 
     def forward(self, predictions, target):
         """
@@ -109,10 +111,11 @@ class YOLOLoss(nn.Module):
         box_target_xy = target_boxes[..., 0:2]
         box_target_wh = target_boxes[..., 2:4]
 
+        box_pred_wh = torch.sign(box_pred_wh) * torch.sqrt(torch.abs(box_pred_wh + self.eps))
+        box_target_wh = torch.sqrt(box_target_wh + self.eps)
+
         loc_loss = self.mse(exists_box * box_pred_xy, exists_box * box_target_xy)
-        loc_loss += self.mse(
-            exists_box * torch.sqrt(box_pred_wh), exists_box * torch.sqrt(box_target_wh)
-        )
+        loc_loss += self.mse(exists_box * box_target_wh, exists_box * box_target_wh)
 
         # confidence loss
         box_pred_conf = pred_boxes[..., 4:5]
@@ -124,9 +127,11 @@ class YOLOLoss(nn.Module):
         conf_loss_noobj = self.mse(noobj_mask * box_pred_conf, noobj_mask * box_target_conf)
 
         # classification loss
+        # class predictions: (N, S, S, C)
+        object_mask = (target[..., 4::5].sum(dim=-1, keepdim=True) > 0).float()
         class_loss = self.mse(
-            exists_box.squeeze(-1).expand_as(pred_classes) * pred_classes,
-            exists_box.squeeze(-1).expand_as(target_classes) * target_classes,
+            object_mask.expand_as(pred_classes) * pred_classes,
+            object_mask.expand_as(target_classes) * target_classes,
         )
 
         # total loss

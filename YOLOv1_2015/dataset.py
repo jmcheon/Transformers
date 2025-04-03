@@ -38,6 +38,7 @@ class VOCDataset(nn.Module):
     - (x, y) relative to cell, (w, h) relative to image
     - one-hot encoded in the last C entries
     """
+
     def __init__(
         self,
         img_dir: str,
@@ -61,9 +62,7 @@ class VOCDataset(nn.Module):
         return len(self.img_filenames)
 
     def __getitem__(self, idx):
-        print(idx)
         filename = self.img_filenames[idx]
-        print(filename)
         img_path = os.path.join(self.img_dir, filename + ".jpg")
         annotation_path = os.path.join(self.annotation_dir, filename + ".xml")
 

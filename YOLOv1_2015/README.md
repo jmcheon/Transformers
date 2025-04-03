@@ -62,6 +62,10 @@ Where:
 - $1_{ij}^{obj}$: 1 if object is in cell $i$, and box $j$ is responsible
 - $\lambda_{coord}=5, \lambda_{noobj}=0.5$ (default values)
 
+## Training
+
+- dataset: [Pascal VOC 2007 dataset](http://host.robots.ox.ac.uk/pascal/VOC/voc2007/index.html)
+
 # References
 
 - https://arxiv.org/abs/1506.02640

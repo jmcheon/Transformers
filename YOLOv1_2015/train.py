@@ -2,13 +2,16 @@ from pathlib import Path
 
 import torch
 import torch.optim as optim
-
-# from config import get_weights_file_path
 from config import get_weights_file_path
-from model import YOLOLoss
+from model import YOLO, YOLOLoss
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
+
+
+def get_model(config):
+    model = YOLO(config["grid_size"], config["num_boxes"], config["num_classes"])
+    return model
 
 
 def train_yolo(model, config, dataset):
@@ -50,8 +53,6 @@ def train_yolo(model, config, dataset):
 
     # training
     for epoch in range(initial_epoch, config["num_epochs"]):
-        total_loss = 0
-
         model.train()
         batch_iterator = tqdm(train_loader, desc=f"Epoch [{epoch:02d}/{config['num_epochs']}]")
         for images, targets in batch_iterator:
@@ -66,13 +67,15 @@ def train_yolo(model, config, dataset):
 
             # backward
             loss.backward()
+            if torch.isnan(loss):
+                print("NaN detected! Skipping step.")
+                continue
 
             # update
             optimizer.step()
             optimizer.zero_grad()
 
             global_step += 1
-            total_loss += loss.item()
 
             batch_iterator.set_postfix(loss=f"{loss.item():6.3f}")
         # scheduler.step()
