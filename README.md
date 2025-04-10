@@ -27,3 +27,4 @@ Each implementation follows this naming format:
 ## 📌 Computation and Languages
 
 - **Transformer_2017** - [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
+- **BERT_2018** - [BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/abs/1810.04805)
