@@ -5,7 +5,7 @@ from Transformer_2017.model import (
     Encoder,
     EncoderBlock,
     FeedForwardBlock,
-    InputEnbeddings,
+    InputEmbeddings,
     MultiHeadAttentionBlock,
     PositionalEncoding,
     ProjectionLayer,
@@ -15,8 +15,8 @@ from Transformer_2017.model import (
 class Transformer(nn.Module):
     def __init__(
         self,
-        src_embed: InputEnbeddings,
-        tgt_embed: InputEnbeddings,
+        src_embed: InputEmbeddings,
+        tgt_embed: InputEmbeddings,
         src_pos: PositionalEncoding,
         tgt_pos: PositionalEncoding,
         encoder: Encoder,
@@ -49,7 +49,7 @@ class Transformer(nn.Module):
 class TransformerEncoder(nn.Module):
     def __init__(
         self,
-        embed: InputEnbeddings,
+        embed: InputEmbeddings,
         pos: PositionalEncoding,
         encoder: Encoder,
         projection_layer: ProjectionLayer,
@@ -79,7 +79,7 @@ def build_transformer_encoder(
     dropout: float = 0.1,
 ) -> TransformerEncoder:
     # Create the embedding layers
-    embed = InputEnbeddings(vocab_size, d_model)
+    embed = InputEmbeddings(vocab_size, d_model)
     # Create the positional layers
     pos = PositionalEncoding(d_model, seq_len, dropout)
 
@@ -120,8 +120,8 @@ def build_transformer(
     dropout: float = 0.1,
 ) -> Transformer:
     # Create the embedding layers
-    src_embed = InputEnbeddings(src_vocab_size, d_model)
-    tgt_embed = InputEnbeddings(tgt_vocab_size, d_model)
+    src_embed = InputEmbeddings(src_vocab_size, d_model)
+    tgt_embed = InputEmbeddings(tgt_vocab_size, d_model)
 
     # Create the positional layers
     src_pos = PositionalEncoding(d_model, src_seq_len, dropout)

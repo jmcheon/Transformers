@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 
 
-class InputEnbeddings(nn.Module):
+class InputEmbeddings(nn.Module):
     def __init__(self, vocab_size: int, d_model: int):
         super().__init__()
         self.vocab_size = vocab_size
@@ -59,7 +59,7 @@ class LayerNormalization(nn.Module):
     def forward(self, x):
         """
         Args:
-            x: input tensor of shape (batch_size, num_patches + 1, d_model)
+            x: input tensor of shape (batch_size, seq_len, d_model)
 
         Returns:
             normalized tensor of same shape
