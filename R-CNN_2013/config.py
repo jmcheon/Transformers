@@ -4,6 +4,7 @@ from pathlib import Path
 def get_config():
     return {
         "num_classes": 21,
+        "lambda_bbox": 1.0,
         "batch_size": 64,
         "num_epochs": 20,
         "lr": 1e-3,
