@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 
 import PIL.Image as Image
 import torch
-import torch.nn as nn
+from torch.utils.data import Dataset
 from utils import compute_iou_vectorized
 
 VOC_CLASSES = [
@@ -30,7 +30,7 @@ VOC_CLASSES = [
 ]
 
 
-class VOCDataset(nn.Module):
+class VOCDataset(Dataset):
     """
     - box with the highest IoU responsible
     - store one object per grid cell
@@ -102,12 +102,16 @@ class VOCDataset(nn.Module):
 
         return image, target
 
-    def parse_annotation(self, annotation_path):
+    def parse_annotation(self, annotation_path, box_format="xywh", normalize=True):
         """
         Perse Object's bounding box and it's label(class) in xml format
 
         Returns:
-            boxes (List): normalized bounding box values
+
+            boxes (List): bounding box values
+                when 'box_format' is
+                    - xywh: (x_center, y_center, w, h)
+                    - xyxy: (x_min, y_min, x_max, y_max)
             labels (List): class indices corresponding to bounding box's
         """
         tree = ET.parse(annotation_path)
@@ -129,13 +133,38 @@ class VOCDataset(nn.Module):
             x_max = int(bbox.find("xmax").text)
             y_max = int(bbox.find("ymax").text)
 
-            # normalize coordinates [0, 1]
-            x_center = ((x_max + x_min) / 2) / img_width
-            y_center = ((y_max + y_min) / 2) / img_height
-            box_width = (x_max - x_min) / img_width
-            box_height = (y_max - y_min) / img_height
+            if box_format == "xywh":
+                x_center = (x_max + x_min) / 2
+                y_center = (y_max + y_min) / 2
+                box_width = x_max - x_min
+                box_height = y_max - y_min
+                # normalize coordinates [0, 1]
+                if normalize:
+                    boxes.append(
+                        [
+                            x_center / img_width,
+                            y_center / img_height,
+                            box_width / img_width,
+                            box_height / img_height,
+                        ]
+                    )
+                else:
+                    boxes.append([x_center, y_center, box_width, box_height])
+            elif box_format == "xyxy":
+                if normalize:
+                    boxes.append(
+                        [
+                            x_min / img_width,
+                            y_min / img_height,
+                            x_max / img_width,
+                            y_max / img_height,
+                        ]
+                    )
+                else:
+                    boxes.append([x_min, y_min, x_max, y_max])
+            else:
+                raise ValueError(f"Unknown box format: {box_format}. Use 'xywh' or 'xyxy'.")
 
-            boxes.append([x_center, y_center, box_width, box_height])
             labels.append(class_idx)
 
         return boxes, labels

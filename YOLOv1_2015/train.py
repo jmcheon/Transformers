@@ -9,9 +9,10 @@ from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 
 
-def get_model(config):
-    model = YOLO(config["grid_size"], config["num_boxes"], config["num_classes"])
-    return model
+def get_yolo(config):
+    yolo = YOLO(config["grid_size"], config["num_boxes"], config["num_classes"])
+
+    return yolo
 
 
 def train_yolo(model, config, dataset):
@@ -29,6 +30,7 @@ def train_yolo(model, config, dataset):
     writer = SummaryWriter(config["experiment_name"])
     optimizer = optim.Adam(model.parameters(), lr=config["lr"])
     # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.1)
+
     loss_fn = YOLOLoss(
         grid_size=config["grid_size"],
         num_boxes=config["num_boxes"],
