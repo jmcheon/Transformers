@@ -24,7 +24,8 @@ Each implementation follows this naming format:
 - **Swin_Transformer_2021** - [Hierarchical Vision Transformer Using Shifted Windows](https://arxiv.org/abs/2103.14030)
 - **SwinIR_2021** - [SwinIR: Image Restoration Using Swin Transformer](https://arxiv.org/abs/2108.10257)
 
-## 📌 Computation and Languages
+## 📌 Computation and Language
 
+- **seq2seq_2014** - [Sequence to Sequence Learning with Neural Networks](https://arxiv.org/abs/1409.32152)
 - **Transformer_2017** - [Attention Is All You Need](https://arxiv.org/abs/1706.03762)
 - **BERT_2018** - [BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding](https://arxiv.org/abs/1810.04805)
